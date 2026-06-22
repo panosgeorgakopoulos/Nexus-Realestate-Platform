@@ -25,19 +25,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // --- ΠΡΟΣΘΗΚΗ: Ενεργοποίηση CORS για να μιλάει το Frontend με το Backend ---
+                .cors(cors -> cors.configurationSource(request -> {
+                    var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
+                    corsConfiguration.setAllowedOriginPatterns(java.util.List.of("*")); // Επιτρέπει όλα τα origins (π.χ. localhost:63342)
+                    corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
+                    return corsConfiguration;
+                }))
+                // -------------------------------------------------------------------------
                 .csrf(csrf -> csrf.disable()) // Απενεργοποίηση CSRF για REST API
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless συνεδρίες
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Δημόσια endpoints
                         .requestMatchers("/api/auth/**", "/api/properties", "/api/heatmap").permitAll()
-                        // Κανόνες ανά ρόλο βάσει του οδηγού
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/preferences/**").hasRole("BUYER")
                         .requestMatchers("/api/properties/**").hasAnyRole("OWNER", "ADMIN")
                         .anyRequest().authenticated()
                 );
 
-        // Τοποθέτηση του JWT φίλτρου πριν από το βασικό φίλτρο του Spring Security
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
