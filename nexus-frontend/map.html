@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>NEXUS - Διαδραστικός Χάρτης</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    /* Ορίζουμε το ύψος του χάρτη για να πιάσει την οθόνη */
+    #nexusMap { height: calc(100vh - 70px); width: 100%; }
+
+    /* Στυλ για τα Popups του Leaflet */
+    .leaflet-popup-content h3 { margin: 0 0 5px 0; color: var(--primary-color); }
+    .leaflet-popup-content p { margin: 0 0 10px 0; color: #4b5563; }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">NEXUS</a>
+  <ul>
+    <li><a href="properties.html">Λίστα Ακινήτων</a></li>
+    <li><a href="index.html">Επιστροφή</a></li>
+  </ul>
+</nav>
+
+<!-- Το δοχείο του Χάρτη -->
+<div id="nexusMap"></div>
+
+<!-- Τα βοηθητικά μας Scripts -->
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+
+<!-- Leaflet JS & Leaflet.heat Plugin -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+<!-- Η δική μας λογική για τον χάρτη -->
+<script src="js/map.js"></script>
+</body>
+</html>

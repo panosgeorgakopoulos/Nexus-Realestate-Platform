@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>NEXUS - Εγγραφή</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav>
+    <a href="index.html" class="logo">NEXUS</a>
+</nav>
+<div class="auth-container">
+    <h2>Δημιουργία Λογαριασμού</h2>
+    <form id="registerForm">
+        <div class="form-group">
+            <label>Ονοματεπώνυμο</label>
+            <input type="text" id="fullName" required>
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" required>
+        </div>
+        <div class="form-group">
+            <label>Κωδικός</label>
+            <input type="password" id="password" required>
+        </div>
+        <div class="form-group">
+            <label>Ρόλος</label>
+            <select id="role">
+                <option value="BUYER">Ψάχνω Ακίνητο (Αγοραστής/Ενοικιαστής)</option>
+                <option value="OWNER">Έχω Ακίνητο (Ιδιοκτήτης/Μεσίτης)</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-primary" style="width: 100%;">Εγγραφή</button>
+    </form>
+    <p style="margin-top: 1rem; text-align: center;">Έχετε ήδη λογαριασμό; <a href="login.html">Σύνδεση</a></p>
+</div>
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            role: document.getElementById('role').value
+        };
+
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if(response.ok) {
+                alert('Η εγγραφή πέτυχε! Μπορείτε να συνδεθείτε.');
+                window.location.href = 'login.html';
+            } else {
+                alert('Σφάλμα κατά την εγγραφή.');
+            }
+        } catch (err) { alert('Σφάλμα σύνδεσης με τον server.'); }
+    });
+</script>
+</body>
+</html>

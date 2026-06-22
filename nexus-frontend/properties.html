@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>NEXUS - Ακίνητα</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .search-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin: 2rem 5%; }
+    .search-bar { display: flex; gap: 1rem; }
+    .search-bar input { flex: 1; padding: 1rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1.1rem; }
+    .properties-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; padding: 0 5% 3rem 5%; }
+
+    /* Property Card Styling */
+    .property-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; position: relative;}
+    .property-card:hover { transform: translateY(-5px); }
+    .property-image { height: 200px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; }
+    .property-info { padding: 1.5rem; }
+    .property-price { font-size: 1.5rem; font-weight: bold; color: var(--primary-color); margin-bottom: 0.5rem; }
+
+    /* Match Score Badges */
+    .match-badge { position: absolute; top: 10px; right: 10px; padding: 0.5rem 1rem; border-radius: 20px; color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .badge-excellent { background-color: var(--success); } /* >= 80 */
+    .badge-good { background-color: var(--primary-color); } /* 65-79 */
+    .badge-fair { background-color: var(--warning); } /* 50-64 */
+    .badge-poor { background-color: #9ca3af; } /* < 50 */
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">NEXUS</a>
+  <ul id="nav-dynamic"></ul>
+</nav>
+
+<div class="search-container">
+  <h2 style="margin-bottom: 1rem;">Έξυπνη Αναζήτηση</h2>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="π.χ. Διαμέρισμα στη Γλυφάδα με 2 υπνοδωμάτια έως 800 ευρώ">
+    <button id="searchBtn" class="btn-primary" style="padding: 0 2rem; font-size: 1.1rem;">Αναζήτηση</button>
+  </div>
+  <div style="margin-top: 1rem; display: flex; gap: 1rem;" id="buyerActions">
+  </div>
+</div>
+
+<div class="properties-grid" id="propertiesGrid">
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/properties.js"></script>
+</body>
+</html>
