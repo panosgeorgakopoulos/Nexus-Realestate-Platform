@@ -2,6 +2,7 @@ package com.nexus.realestate.controller;
 
 import com.nexus.realestate.dto.SearchCriteria;
 import com.nexus.realestate.model.Property;
+import com.nexus.realestate.search.NLSearchParser;
 import com.nexus.realestate.service.PropertyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,15 +16,20 @@ import java.util.List;
 public class PropertyController {
 
     private final PropertyService propertyService;
+    private final NLSearchParser nlSearchParser; // Η "γέφυρα" για τη φυσική γλώσσα
 
     @GetMapping
     public ResponseEntity<List<Property>> getAllProperties() {
         return ResponseEntity.ok(propertyService.getAllProperties());
     }
 
-    // Endpoint για Δυναμική Αναζήτηση (GET /api/properties/search)
+    // Endpoint για Δυναμική Αναζήτηση - Συνδυάζει τον κώδικα του συνεργάτη σου με το NLP!
     @GetMapping("/search")
-    public ResponseEntity<List<Property>> searchProperties(SearchCriteria criteria) {
+    public ResponseEntity<List<Property>> searchProperties(@RequestParam(required = false) String query, SearchCriteria criteria) {
+        // Αν το frontend έστειλε φυσική γλώσσα (π.χ. "διαμέρισμα 800 ευρώ")
+        if (query != null && !query.isBlank()) {
+            criteria = nlSearchParser.parse(query);
+        }
         return ResponseEntity.ok(propertyService.searchProperties(criteria));
     }
 

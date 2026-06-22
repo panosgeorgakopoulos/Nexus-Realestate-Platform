@@ -5,6 +5,7 @@ import com.nexus.realestate.dto.RegisterRequest;
 import com.nexus.realestate.security.JwtUtil;
 import com.nexus.realestate.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,10 +46,17 @@ public class AuthController {
     // Endpoint για Σύνδεση (Login)
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        // Επαλήθευση κωδικού μέσω Spring Security
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+        try {
+            // Επαλήθευση κωδικού μέσω Spring Security
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (Exception e) {
+            // Πλέον αν ο κωδικός είναι λάθος δεν βγάζει 404, αλλά σωστό μήνυμα λάθους!
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Λάθος email ή κωδικός!");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
 
         // Αν είναι σωστά τα στοιχεία, φορτώνουμε τον χρήστη και δημιουργούμε το Token
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());

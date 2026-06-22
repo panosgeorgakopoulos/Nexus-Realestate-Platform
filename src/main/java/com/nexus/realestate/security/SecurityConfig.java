@@ -37,12 +37,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Απενεργοποίηση CSRF για REST API
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/properties", "/api/heatmap").permitAll()
+                        // ΠΡΟΣΘΗΚΗ: Βάλαμε το /api/properties/search και το /error
+                        .requestMatchers("/api/auth/**", "/api/properties", "/api/properties/search", "/api/heatmap", "/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/preferences/**").hasRole("BUYER")
                         .requestMatchers("/api/properties/**").hasAnyRole("OWNER", "ADMIN")
                         .anyRequest().authenticated()
                 );
+
 
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
