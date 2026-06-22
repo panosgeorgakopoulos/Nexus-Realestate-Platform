@@ -40,7 +40,9 @@ public class PropertyController {
 
     @PostMapping
     public ResponseEntity<Property> createProperty(@RequestBody Property property) {
-        Property createdProperty = propertyService.createProperty(property);
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        Property createdProperty = propertyService.createProperty(property, email);
         return new ResponseEntity<>(createdProperty, HttpStatus.CREATED);
     }
 

@@ -17,8 +17,12 @@ public class PropertyService {
 
     private final PropertyRepository propertyRepository;
     private final PriceHistoryRepository priceHistoryRepository;
+    private final com.nexus.realestate.repository.UserRepository userRepository;
 
-    public Property createProperty(Property property) {
+    public Property createProperty(Property property, String ownerEmail) {
+        com.nexus.realestate.model.User owner = userRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+        property.setOwner(owner);
         return propertyRepository.save(property);
     }
 
