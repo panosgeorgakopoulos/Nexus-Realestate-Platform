@@ -67,7 +67,16 @@ public class NLSearchParser {
         } else if (lowerQuery.contains("αγορά") || lowerQuery.contains("πώληση") || lowerQuery.contains("sale")) {
             criteria.setListingStatus(ListingStatus.FOR_SALE);
         }
-
+        // 7. Λέξεις-κλειδιά: Περιοχές
+        String[] knownAreas = {"κολωνάκι", "γλυφάδα", "κηφισιά", "παγκράτι", "περιστέρι", "χαλάνδρι", "πειραιάς", "καλαμαριά", "θεσσαλονίκη"};
+        for (String area : knownAreas) {
+            if (lowerQuery.contains(area)) {
+                // Κάνει capitalize το πρώτο γράμμα για να κάνει match με τη βάση
+                String formattedArea = area.substring(0, 1).toUpperCase() + area.substring(1);
+                criteria.setAreaName(formattedArea);
+                break;
+            }
+        }
         return criteria;
     }
 }

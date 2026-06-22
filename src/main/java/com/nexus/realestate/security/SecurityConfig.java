@@ -25,29 +25,36 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // --- ΠΡΟΣΘΗΚΗ: Ενεργοποίηση CORS για να μιλάει το Frontend με το Backend ---
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfiguration.setAllowedOriginPatterns(java.util.List.of("*")); // Επιτρέπει όλα τα origins (π.χ. localhost:63342)
+                    corsConfiguration.setAllowedOriginPatterns(java.util.List.of("*"));
                     corsConfiguration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
                     return corsConfiguration;
                 }))
-                // -------------------------------------------------------------------------
-                .csrf(csrf -> csrf.disable()) // Απενεργοποίηση CSRF για REST API
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ΠΡΟΣΘΗΚΗ: Βάλαμε το /api/properties/search και το /error
+                        // Στατικά αρχεία Frontend — ελεύθερη πρόσβαση
+                        .requestMatchers(
+                                "/", "/*.html",
+                                "/css/**", "/js/**", "/images/**",
+                                "/admin/**",
+                                "/favicon.ico"
+                        ).permitAll()
+                        // API endpoints — ελεύθερη πρόσβαση
                         .requestMatchers("/api/auth/**", "/api/properties", "/api/properties/search", "/api/heatmap", "/error").permitAll()
+                        // ΔΙΟΡΘΩΣΗ: Ανοίγουμε την προβολή (details) σε όλους
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/properties/{id}").permitAll()
+                        // ΔΙΟΡΘΩΣΗ: Επιτρέπουμε τα προτεινόμενα στους αγοραστές
+                        .requestMatchers("/api/properties/recommended").hasRole("BUYER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/preferences/**").hasRole("BUYER")
                         .requestMatchers("/api/properties/**").hasAnyRole("OWNER", "ADMIN")
                         .anyRequest().authenticated()
                 );
 
-
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>NEXUS - Admin Panel</title>
+  <!-- Το CSS είναι έναν φάκελο πίσω -->
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .admin-section {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin: 2rem 5%;
+    }
+    /* Στυλ Πίνακα για τα δεδομένα */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    th {
+      background-color: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+    tr:hover { background-color: #f9fafb; }
+
+    .btn-success { background: var(--success); color: white; padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
+    .btn-danger { background: var(--danger); color: white; padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="logo">NEXUS Admin</a>
+  <ul>
+    <li><a href="../index.html">Αρχική</a></li>
+    <li><a href="#" onclick="Auth.logout(); return false;">Αποσύνδεση</a></li>
+  </ul>
+</nav>
+
+<!-- Ενότητα 1: Εγκρίσεις Ακινήτων -->
+<div class="admin-section">
+  <h2>Εκκρεμείς Αγγελίες προς Έγκριση</h2>
+  <p style="color: #6b7280; margin-bottom: 1rem;">Ελέγξτε και εγκρίνετε τα ακίνητα για να εμφανιστούν στην αναζήτηση.</p>
+
+  <table>
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Τίτλος Ακινήτου</th>
+      <th>Τύπος / Status</th>
+      <th>Τιμή</th>
+      <th>Ενέργειες</th>
+    </tr>
+    </thead>
+    <tbody id="pendingPropertiesTable">
+    <!-- Τα δεδομένα θα φορτωθούν δυναμικά εδώ -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Ενότητα 2: Διαχείριση Βαρών (Matching Engine Weights) -->
+<div class="admin-section">
+  <h2>Παράμετροι Αλγορίθμου (Matching Weights)</h2>
+  <p style="color: #6b7280; margin-bottom: 1rem;">Αλλάξτε τη βαρύτητα των κριτηρίων. Το άθροισμα καλό είναι να ισούται με 100.</p>
+
+  <table>
+    <thead>
+    <tr>
+      <th>Κριτήριο</th>
+      <th>Βάρος (%)</th>
+      <th>Ενημέρωση</th>
+    </tr>
+    </thead>
+    <tbody id="weightsTable">
+    <!-- Τα βάρη θα φορτωθούν δυναμικά εδώ -->
+    </tbody>
+  </table>
+</div>
+
+<!-- Φόρτωση των JS Helpers -->
+<script src="../js/auth.js"></script>
+<script src="../js/api.js"></script>
+
+<script>
+  // Έλεγχος ασφαλείας: Μόνο ADMIN μπαίνει εδώ
+  if (!Auth.isLoggedIn() || Auth.getUserRole() !== 'ADMIN') {
+    alert('Απαγορεύεται η πρόσβαση. Απαιτούνται δικαιώματα διαχειριστή.');
+    window.location.href = '../index.html';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadPendingProperties();
+    loadWeights();
+  });
+
+  // 1. Φόρτωση και απεικόνιση εκκρεμών αγγελιών
+  async function loadPendingProperties() {
+    try {
+      const properties = await Api.request('/admin/properties/pending');
+      const tbody = document.getElementById('pendingPropertiesTable');
+      tbody.innerHTML = '';
+
+      if (properties.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Δεν υπάρχουν εκκρεμείς αγγελίες.</td></tr>';
+        return;
+      }
+
+      properties.forEach(prop => {
+        tbody.innerHTML += `
+                        <tr>
+                            <td>#${prop.id}</td>
+                            <td><strong>${prop.title}</strong><br><small>${prop.areaName}</small></td>
+                            <td>${prop.type} <br> <small>${prop.status}</small></td>
+                            <td>€${prop.price.toLocaleString('el-GR')}</td>
+                            <td>
+                                <button onclick="approveProperty(${prop.id})" class="btn-success">Έγκριση</button>
+                                <button onclick="rejectProperty(${prop.id})" class="btn-danger">Απόρριψη</button>
+                            </td>
+                        </tr>
+                    `;
+      });
+    } catch (e) {
+      console.error('Σφάλμα φόρτωσης αγγελιών:', e);
+    }
+  }
+
+  async function approveProperty(id) {
+    if(confirm('Σίγουρα θέλετε να εγκρίνετε αυτή την αγγελία;')) {
+      try {
+        await Api.request(`/admin/properties/${id}/approve`, { method: 'PUT' });
+        alert('Η αγγελία εγκρίθηκε!');
+        loadPendingProperties(); // Ανανέωση του πίνακα
+      } catch (e) { alert('Σφάλμα κατά την έγκριση.'); }
+    }
+  }
+
+  async function rejectProperty(id) {
+    if(confirm('Σίγουρα θέλετε να απορρίψετε (διαγράψετε) αυτή την αγγελία;')) {
+      try {
+        await Api.request(`/admin/properties/${id}/reject`, { method: 'PUT' });
+        alert('Η αγγελία απορρίφθηκε.');
+        loadPendingProperties(); // Ανανέωση του πίνακα
+      } catch (e) { alert('Σφάλμα κατά την απόρριψη.'); }
+    }
+  }
+
+  // 2. Φόρτωση και ενημέρωση βαρών αλγορίθμου
+  async function loadWeights() {
+    try {
+      const weights = await Api.request('/admin/matching-weights');
+      const tbody = document.getElementById('weightsTable');
+      tbody.innerHTML = '';
+
+      weights.forEach(w => {
+        tbody.innerHTML += `
+                        <tr>
+                            <td style="text-transform: capitalize;"><strong>${w.criterion}</strong></td>
+                            <td>
+                                <input type="number" id="weight-${w.id}" value="${w.weight}" style="width: 80px; padding: 0.3rem;"> %
+                            </td>
+                            <td>
+                                <button onclick="updateWeight(${w.id})" class="btn-primary" style="padding: 0.4rem 0.8rem;">Αποθήκευση</button>
+                            </td>
+                        </tr>
+                    `;
+      });
+    } catch (e) {
+      console.error('Σφάλμα φόρτωσης βαρών:', e);
+    }
+  }
+
+  async function updateWeight(id) {
+    const newWeightValue = document.getElementById(`weight-${id}`).value;
+    try {
+      await Api.request(`/admin/matching-weights/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ weight: parseFloat(newWeightValue) })
+      });
+      alert('Το βάρος ενημερώθηκε επιτυχώς! Οι μελλοντικοί υπολογισμοί θα χρησιμοποιούν τη νέα τιμή.');
+    } catch (e) {
+      alert('Σφάλμα κατά την ενημέρωση.');
+    }
+  }
+</script>
+</body>
+</html>

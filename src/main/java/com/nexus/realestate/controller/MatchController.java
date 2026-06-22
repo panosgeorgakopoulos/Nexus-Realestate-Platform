@@ -22,15 +22,18 @@ public class MatchController {
     private final UserRepository userRepository;
 
     @GetMapping("/recommended")
-    public ResponseEntity<List<Match>> getRecommendedProperties() {
+    public ResponseEntity<?> getRecommendedProperties() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Ο χρήστης δεν βρέθηκε"));
 
-        // Προκαλούμε υπολογισμό τη στιγμή του request για να έχει πάντα φρέσκα δεδομένα
-        matchingService.calculateScoresForUser(currentUser);
+        try {
+            matchingService.calculateScoresForUser(currentUser);
+        } catch (RuntimeException e) {
+            // ΔΙΟΡΘΩΣΗ: Επιστρέφουμε 400 Bad Request για να ενεργοποιηθεί το catch() του frontend
+            return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
 
-        // Επιστρέφουμε τις προτάσεις
         return ResponseEntity.ok(matchingService.getRecommendationsForUser(currentUser));
     }
 }

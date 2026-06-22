@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>NEXUS - Smart Real Estate</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .hero { text-align: center; padding: 6rem 1rem; background: linear-gradient(rgba(37, 99, 235, 0.1), rgba(30, 64, 175, 0.1)); }
+    .hero h1 { font-size: 3rem; margin-bottom: 1rem; color: var(--secondary-color); }
+    .hero p { font-size: 1.2rem; color: #4b5563; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">NEXUS</a>
+  <ul id="nav-links">
+  </ul>
+</nav>
+
+<div class="hero">
+  <h1>Βρείτε το ιδανικό ακίνητο με τη δύναμη του AI</h1>
+  <p>Το NEXUS υπολογίζει το προσωπικό σας Match Score για κάθε ακίνητο, γλιτώνοντάς σας χρόνο από άσκοπες αναζητήσεις.</p>
+  <a href="properties.html" class="btn-primary" style="font-size: 1.2rem; padding: 1rem 2rem;">Αναζήτηση Ακινήτων</a>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  // Δυναμικό Navigation Menu
+  const navLinks = document.getElementById('nav-links');
+
+  if (Auth.isLoggedIn()) {
+    const role = Auth.getUserRole();
+
+    if (role === 'BUYER') {
+      navLinks.innerHTML = `
+                    <li><a href="properties.html">Ακίνητα</a></li>
+                    <li><a href="map.html">Χάρτης</a></li>
+                    <li><a href="preferences.html">Προφίλ Αναγκών</a></li>
+                    <li><a href="#" onclick="Auth.logout(); return false;">Αποσύνδεση</a></li>
+                `;
+    } else if (role === 'OWNER') {
+      navLinks.innerHTML = `
+                    <li><a href="properties.html">Τα Ακίνητά μου</a></li>
+                    <li><a href="new-property.html">Νέα Αγγελία</a></li>
+                    <li><a href="#" onclick="Auth.logout(); return false;">Αποσύνδεση</a></li>
+                `;
+    } else if (role === 'ADMIN') {
+      navLinks.innerHTML = `
+                    <li><a href="admin/index.html">Admin Panel</a></li>
+                    <li><a href="#" onclick="Auth.logout(); return false;">Αποσύνδεση</a></li>
+                `;
+    }
+  } else {
+    // Unauthenticated User
+    navLinks.innerHTML = `
+                <li><a href="properties.html">Ακίνητα</a></li>
+                <li><a href="map.html">Χάρτης</a></li>
+                <li><a href="login.html">Σύνδεση</a></li>
+                <li><a href="register.html" class="btn-primary">Εγγραφή</a></li>
+            `;
+  }
+</script>
+</body>
+</html>

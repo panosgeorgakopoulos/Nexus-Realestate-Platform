@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>NEXUS - Σύνδεση</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">NEXUS</a>
+</nav>
+<div class="auth-container">
+  <h2>Σύνδεση</h2>
+  <form id="loginForm">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" required>
+    </div>
+    <div class="form-group">
+      <label>Κωδικός</label>
+      <input type="password" id="password" required>
+    </div>
+    <button type="submit" class="btn-primary" style="width: 100%;">Σύνδεση</button>
+  </form>
+  <p style="margin-top: 1rem; text-align: center;">Δεν έχετε λογαριασμό; <a href="register.html">Εγγραφή</a></p>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script>
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      email: document.getElementById('email').value,
+      password: document.getElementById('password').value
+    };
+
+    try {
+      const data = await Api.request('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      if(data.token) {
+        Auth.setToken(data.token); // Αποθήκευση του JWT
+        window.location.href = 'index.html'; // Ανακατεύθυνση στην αρχική
+      }
+    } catch (err) { alert('Λάθος email ή κωδικός.'); }
+  });
+</script>
+</body>
+</html>

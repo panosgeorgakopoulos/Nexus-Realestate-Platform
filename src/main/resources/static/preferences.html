@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>NEXUS - Προφίλ Αναγκών</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">NEXUS</a>
+  <ul>
+    <li><a href="properties.html">Ακίνητα</a></li>
+    <li><a href="#" onclick="Auth.logout(); return false;">Αποσύνδεση</a></li>
+  </ul>
+</nav>
+
+<div class="auth-container" style="max-width: 600px;">
+  <h2>Το Προφίλ Αναγκών μου</h2>
+  <p style="margin-bottom: 1.5rem; color: #666;">Συμπληρώστε τα παρακάτω για να σας προτείνουμε τα ιδανικά ακίνητα.</p>
+
+  <form id="preferencesForm">
+    <div class="form-group">
+      <label>Επιθυμητός Τύπος</label>
+      <select id="listingStatus">
+        <option value="FOR_RENT">Ενοικίαση</option>
+        <option value="FOR_SALE">Αγορά</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Τύπος Ακινήτου</label>
+      <select id="propertyType">
+        <option value="APARTMENT">Διαμέρισμα</option>
+        <option value="HOUSE">Μονοκατοικία</option>
+        <option value="ANY">Οτιδήποτε</option>
+      </select>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+      <div class="form-group" style="flex: 1;">
+        <label>Ελάχιστο Budget (€)</label>
+        <input type="number" id="budgetMin" value="0">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Μέγιστο Budget (€)</label>
+        <input type="number" id="budgetMax" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Περιοχές (χωρισμένες με κόμμα π.χ. Γλυφάδα, Βούλα)</label>
+      <input type="text" id="areaNames" required>
+    </div>
+    <div class="form-group">
+      <label>Lifestyle</label>
+      <select id="lifestyleType">
+        <option value="PROFESSIONAL">Επαγγελματίας (Κοντά σε κέντρο/μετρό)</option>
+        <option value="FAMILY">Οικογένεια (Χρειάζομαι χώρους/πάρκινγκ)</option>
+        <option value="STUDENT">Φοιτητής (Οικονομικό/Μικρό)</option>
+      </select>
+    </div>
+    <button type="submit" class="btn-primary" style="width: 100%;">Αποθήκευση Προφίλ</button>
+  </form>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script>
+  if (!Auth.isLoggedIn() || Auth.getUserRole() !== 'BUYER') {
+    alert('Μόνο αγοραστές/ενοικιαστές έχουν πρόσβαση εδώ.');
+    window.location.href = 'index.html';
+  }
+
+  // Ανάκτηση υπαρχόντων προτιμήσεων αν υπάρχουν
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const prefs = await Api.request('/preferences');
+      if (prefs.id) {
+        document.getElementById('budgetMin').value = prefs.budgetMin || 0;
+        document.getElementById('budgetMax').value = prefs.budgetMax || '';
+        document.getElementById('areaNames').value = prefs.areaNames || '';
+        document.getElementById('listingStatus').value = prefs.listingStatus || 'FOR_RENT';
+        document.getElementById('propertyType').value = prefs.propertyType || 'APARTMENT';
+        document.getElementById('lifestyleType').value = prefs.lifestyleType || 'PROFESSIONAL';
+        // Αποθηκεύουμε το ID για να κάνουμε PUT αντί για POST
+        document.getElementById('preferencesForm').dataset.id = prefs.id;
+      }
+    } catch (e) { console.log('Δεν βρέθηκε παλιό προφίλ, δημιουργία νέου.'); }
+  });
+
+  // Αποθήκευση/Ενημέρωση
+  document.getElementById('preferencesForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      budgetMin: document.getElementById('budgetMin').value,
+      budgetMax: document.getElementById('budgetMax').value,
+      areaNames: document.getElementById('areaNames').value,
+      listingStatus: document.getElementById('listingStatus').value,
+      propertyType: document.getElementById('propertyType').value,
+      lifestyleType: document.getElementById('lifestyleType').value
+    };
+
+    const formId = document.getElementById('preferencesForm').dataset.id;
+    try {
+      if (formId) {
+        await Api.request(`/preferences/${formId}`, { method: 'PUT', body: JSON.stringify(payload) });
+      } else {
+        await Api.request('/preferences', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      alert('Το προφίλ σας αποθηκεύτηκε επιτυχώς! Το Matching Engine τώρα δουλεύει για εσάς.');
+      window.location.href = 'properties.html';
+    } catch (err) { alert('Σφάλμα κατά την αποθήκευση.'); }
+  });
+</script>
+</body>
+</html>

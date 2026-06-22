@@ -1,40 +1,44 @@
 package com.nexus.realestate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nexus.realestate.enums.UserRole;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Data // Το Lombok δημιουργεί αυτόματα τους Getters/Setters
+@Getter
+@Setter
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Αυτόματο BIGSERIAL PK
+    private Long id;
 
     @Column(nullable = false, unique = true)
-    private String email; // VARCHAR(255) UNIQUE
+    private String email;
 
+    @JsonIgnore // ΚΡΥΒΕΙ το password hash από τα JSON responses (Κρίσιμο για Security)
     @Column(name = "password_hash", nullable = false)
-    private String passwordHash; // VARCHAR(255) για το BCrypt hash
+    private String passwordHash;
 
     @Column(name = "full_name", length = 150)
-    private String fullName; // VARCHAR(150)
+    private String fullName;
 
     @Column(length = 20)
-    private String phone; // VARCHAR(20)
+    private String phone;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole role; // ENUM ρόλος χρήστη
+    private UserRole role;
 
     @Column(nullable = false)
-    private boolean verified = false; // BOOLEAN DEFAULT false
+    private boolean verified = false;
 
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt; // TIMESTAMP DEFAULT NOW()
+    private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {

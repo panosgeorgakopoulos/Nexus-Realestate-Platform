@@ -1,15 +1,18 @@
 package com.nexus.realestate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "matches", uniqueConstraints = {
-        // Εξασφαλίζει ότι υπάρχει μόνο ένα σκορ για κάθε συνδυασμό χρήστη-ακινήτου
         @UniqueConstraint(columnNames = {"user_id", "property_id"})
 })
-@Data
+@Getter
+@Setter
 public class Match {
 
     @Id
@@ -18,17 +21,19 @@ public class Match {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user; // Ο χρήστης (BUYER)
+    @JsonIgnore // Κόβει το Infinite Recursion (Match -> User -> Preferences κτλ)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_id", nullable = false)
-    private Property property; // Το ακίνητο
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Property property;
 
     @Column(nullable = false)
-    private Integer score; // Βαθμός αντιστοίχισης (0-100)
+    private Integer score;
 
     @Column(name = "calculated_at", updatable = false)
-    private LocalDateTime calculatedAt; // Πότε υπολογίστηκε
+    private LocalDateTime calculatedAt;
 
     @PrePersist
     protected void onCreate() {

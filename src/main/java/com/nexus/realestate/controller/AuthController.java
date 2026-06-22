@@ -60,7 +60,7 @@ public class AuthController {
 
         // Αν είναι σωστά τα στοιχεία, φορτώνουμε τον χρήστη και δημιουργούμε το Token
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        final String jwt = jwtUtil.generateToken(userDetails.getUsername());
+        final String jwt = jwtUtil.generateToken(userDetails); // Του περνάμε όλο το userDetails για να συμπεριλάβει και τα Roles στο JWT
 
         // Επιστρέφουμε το Token σε μορφή JSON
         Map<String, String> response = new HashMap<>();

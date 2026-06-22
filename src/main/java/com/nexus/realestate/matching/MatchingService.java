@@ -28,7 +28,7 @@ public class MatchingService {
         Optional<Preferences> prefsOpt = preferencesRepository.findAll().stream()
                 .filter(p -> p.getUser().getId().equals(user.getId())).findFirst();
 
-        if (prefsOpt.isEmpty()) return;
+        if (prefsOpt.isEmpty()) throw new RuntimeException("Δεν βρέθηκε Προφίλ Αναγκών");
         Preferences prefs = prefsOpt.get();
 
         List<Property> activeProperties = propertyRepository.findAll().stream()

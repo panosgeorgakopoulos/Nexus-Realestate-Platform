@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>NEXUS - Νέα Αγγελία</title>
+  <!-- Το CSS είναι δύο φάκελοι πίσω -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">NEXUS Owner</a>
+  <ul>
+    <li><a href="index.html">Αρχική</a></li>
+    <li><a href="#" onclick="Auth.logout(); return false;">Αποσύνδεση</a></li>
+  </ul>
+</nav>
+
+<div class="auth-container" style="max-width: 700px;">
+  <h2>Καταχώρηση Νέου Ακινήτου</h2>
+  <p style="margin-bottom: 1.5rem; color: #666;">Η αγγελία σας θα ελεγχθεί από διαχειριστή πριν δημοσιευτεί.</p>
+
+  <form id="newPropertyForm">
+    <div class="form-group">
+      <label>Τίτλος Αγγελίας</label>
+      <input type="text" id="title" required placeholder="π.χ. Πολυτελές Διαμέρισμα 3ου ορόφου">
+    </div>
+    <div class="form-group">
+      <label>Περιγραφή</label>
+      <textarea id="description" rows="4" style="width: 100%; border: 1px solid #d1d5db; border-radius: 4px; padding: 0.75rem;" required></textarea>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+      <div class="form-group" style="flex: 1;">
+        <label>Κατάσταση</label>
+        <select id="status">
+          <option value="FOR_SALE">Πώληση</option>
+          <option value="FOR_RENT">Ενοικίαση</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Τύπος</label>
+        <select id="type">
+          <option value="APARTMENT">Διαμέρισμα</option>
+          <option value="HOUSE">Μονοκατοικία</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Τιμή (€)</label>
+        <input type="number" id="price" required>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+      <div class="form-group" style="flex: 1;">
+        <label>Τετραγωνικά (τ.μ.)</label>
+        <input type="number" id="sqm" required>
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Υπνοδωμάτια</label>
+        <input type="number" id="rooms" required>
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Όροφος</label>
+        <input type="number" id="floor" required>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+      <div class="form-group" style="flex: 1;">
+        <label>Περιοχή</label>
+        <input type="text" id="areaName" required placeholder="π.χ. Κολωνάκι">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Γεωγραφικό Πλάτος (Lat)</label>
+        <input type="number" step="0.000001" id="lat" required placeholder="π.χ. 37.9838">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>Γεωγραφικό Μήκος (Lng)</label>
+        <input type="number" step="0.000001" id="lng" required placeholder="π.χ. 23.7275">
+      </div>
+    </div>
+
+    <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem;">Καταχώρηση</button>
+  </form>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script>
+  // Έλεγχος ασφαλείας: Μόνο OWNER μπαίνει εδώ
+  if (!Auth.isLoggedIn() || Auth.getUserRole() !== 'OWNER') {
+    alert('Μόνο Ιδιοκτήτες/Μεσίτες έχουν πρόσβαση.');
+    window.location.href = 'index.html';
+  }
+
+  document.getElementById('newPropertyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      title: document.getElementById('title').value,
+      description: document.getElementById('description').value,
+      status: document.getElementById('status').value,
+      type: document.getElementById('type').value,
+      price: parseFloat(document.getElementById('price').value),
+      sqm: parseFloat(document.getElementById('sqm').value),
+      rooms: parseInt(document.getElementById('rooms').value),
+      floor: parseInt(document.getElementById('floor').value),
+      areaName: document.getElementById('areaName').value,
+      lat: parseFloat(document.getElementById('lat').value),
+      lng: parseFloat(document.getElementById('lng').value),
+      approved: false, // Ο Admin πρέπει να το εγκρίνει
+      active: true
+    };
+
+    try {
+      // To API αναμένει ο συνδεδεμένος χρήστης να σταλεί μέσω του JWT (εξασφαλίζεται από το api.js)
+      await Api.request('/properties', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      alert('Το ακίνητο καταχωρήθηκε με επιτυχία! Εκκρεμεί έγκριση από διαχειριστή.');
+      window.location.href = 'index.html';
+    } catch (error) {
+      alert('Σφάλμα κατά την καταχώρηση. Ελέγξτε τα στοιχεία.');
+    }
+  });
+</script>
+</body>
+</html>
